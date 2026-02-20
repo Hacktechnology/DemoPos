@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackTechnology - DEMO VERSION</title>
+    <style>
+        :root { 
+            --dark-bg: #0d1117; 
+            --card-bg: #161b22;
+            --neon-green: #2ebc4f; 
+            --neon-blue: #58a6ff;
+            --text-main: #c9d1d9;
+            --red: #f85149;
+            --demo-gold: #f1c40f;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark-bg); margin: 0; padding: 0; color: var(--text-main); }
+        
+        /* PANTALLA DE ACTIVACIÓN */
+        #activation-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .activation-box { background: var(--card-bg); padding: 35px; border-radius: 20px; width: 85%; max-width: 380px; text-align: center; border: 1px solid #30363d; box-shadow: 0 0 20px rgba(241, 196, 15, 0.1); }
+        .logo-ht { background: var(--demo-gold); color: #000; width: 60px; height: 60px; line-height: 60px; border-radius: 15px; font-weight: 900; font-size: 24px; margin: 0 auto 15px; }
+        .id-display { background: #000; color: var(--demo-gold); padding: 12px; border-radius: 10px; font-family: monospace; font-weight: bold; margin: 15px 0; border: 1px solid #30363d; }
+
+        /* NAVEGACIÓN */
+        .navbar { display: none; background: var(--card-bg); border-bottom: 1px solid #30363d; position: sticky; top: 0; z-index: 1000; justify-content: space-around; }
+        .tab-btn { flex: 1; padding: 18px 5px; border: none; background: none; font-weight: bold; color: #8b949e; cursor: pointer; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .tab-btn.active { color: var(--demo-gold); border-bottom: 3px solid var(--demo-gold); }
+
+        /* MÓDULOS */
+        .module { display: none; padding: 15px; }
+        .module.active { display: block; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 18px; margin-bottom: 15px; border: 1px solid #30363d; }
+        h3 { margin: 0 0 15px 0; font-size: 1rem; color: var(--neon-blue); text-transform: uppercase; }
+        
+        input, select { width: 100%; padding: 14px; border: 1px solid #30363d; border-radius: 12px; box-sizing: border-box; font-size: 16px; margin-bottom: 12px; background: #000; color: white; outline: none; }
+        .btn { border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-gold { background: var(--demo-gold); color: #000; }
+        .btn-blue { background: var(--neon-blue); color: #000; }
+        
+        .monto-total { font-size: 2.3rem; font-weight: bold; color: var(--demo-gold); }
+        .item-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #21262d; }
+        .badge-demo { background: var(--demo-gold); color: black; padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div id="activation-screen">
+        <div class="activation-box">
+            <div class="logo-ht">HT</div>
+            <h2 style="margin:0; color: white;">HackTechnology</h2>
+            <div class="badge-demo">MODO PRUEBA LIMITADO</div>
+            
+            <div style="text-align:left; font-size: 11px; color:#8b949e; margin-top:20px;">ID PARA DEMO:</div>
+            <div id="displayID" class="id-display">Generando ID...</div>
+            
+            <input type="text" id="inputLicencia" placeholder="Pegar Licencia de Prueba">
+            <button class="btn btn-gold" onclick="verificarLicencia()">INICIAR DEMO</button>
+            
+            <p style="margin-top:25px; font-size: 12px; color: #8b949e;">Solicita tu acceso aquí:<br><b>+58 426-0869376</b></p>
+        </div>
+    </div>
+
+    <nav class="navbar" id="main-nav">
+        <button class="tab-btn active" onclick="switchTab(event, 'mod-inv')">⚙️<span>Inventario</span></button>
+        <button class="tab-btn" onclick="switchTab(event, 'mod-vta')">🛒<span>Ventas</span></button>
+        <button class="tab-btn" onclick="switchTab(event, 'mod-caja')">💵<span>Caja</span></button>
+    </nav>
+
+    <div id="mod-inv" class="module active">
+        <div class="card">
+            <div class="badge-demo">LÍMITE: 3 PRODUCTOS</div>
+            <h3>Registro de Productos</h3>
+            <input type="hidden" id="editIndex" value="-1">
+            <input type="text" id="invNombre" placeholder="Nombre">
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="invCosto" placeholder="Costo $">
+                <input type="number" id="invUnd" placeholder="Unidades">
+            </div>
+            <input type="number" id="invMargen" value="30">
+            <button class="btn btn-blue" onclick="guardarProducto()">💾 GUARDAR EN DEMO</button>
+            <div id="lista-inventario" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <div id="mod-vta" class="module">
+        <div class="card">
+            <h3>Punto de Venta</h3>
+            <select id="select-prod" onchange="preview()"></select>
+            <div id="preview-box" style="display:none; background:rgba(88, 166, 255, 0.1); padding:12px; border-radius:10px; margin-bottom:12px; color:var(--neon-blue); border:1px solid var(--neon-blue);"></div>
+            <input type="number" id="vtaCant" value="1">
+            <button class="btn btn-gold" onclick="alCarrito()">➕ AÑADIR</button>
+        </div>
+        <div id="carrito-lista" style="padding:10px;"></div>
+    </div>
+
+    <div id="mod-caja" class="module">
+        <div class="card">
+            <h3>Total a Pagar</h3>
+            <span class="monto-total" id="totalBs">0,00 Bs</span>
+        </div>
+        <div class="card">
+            <h3>Vuelto</h3>
+            <input type="number" id="pagoBs" placeholder="Recibido Bs" oninput="vuelto()">
+            <div style="background:rgba(241, 196, 15, 0.1); padding:20px; border-radius:15px; border:1px solid var(--demo-gold); text-align:center;">
+                <strong id="vBs" style="font-size: 2.2rem; color: var(--demo-gold);">0,00</strong> <span style="color:var(--demo-gold)">Bs</span>
+            </div>
+            <p style="font-size:10px; color:#666; text-align:center; margin-top:15px;">Versión Demo por HackTechnology</p>
+        </div>
+    </div>
+
+    <script>
+        let inventario = JSON.parse(localStorage.getItem('ht_demo_inv')) || [];
+        let carrito = [];
+        const fm = (n) => new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2 }).format(n);
+
+        // --- SEGURIDAD DEMO ---
+        const getID = () => "HT-DEMO-" + (navigator.userAgent.length + screen.width) + "-" + (screen.height % 5);
+        const myID = getID();
+        document.getElementById('displayID').innerText = myID;
+
+        function verificarLicencia() {
+            const lic = document.getElementById('inputLicencia').value.trim();
+            const correcta = "PRO-" + myID.split('').reverse().join('') + "-X" + (myID.length * 7);
+            if(lic === correcta) {
+                localStorage.setItem('ht_demo_active', lic);
+                location.reload();
+            } else { alert("Licencia de Prueba Incorrecta."); }
+        }
+
+        window.onload = () => {
+            const activa = localStorage.getItem('ht_demo_active');
+            const correcta = "PRO-" + myID.split('').reverse().join('') + "-X" + (myID.length * 7);
+            if(activa === correcta) {
+                document.getElementById('activation-screen').style.display = 'none';
+                document.getElementById('main-nav').style.display = 'flex';
+                actualizarInterfaz();
+            }
+        };
+
+        // --- BLOQUEO DE LÍMITE (3 PRODUCTOS) ---
+        function guardarProducto() {
+            // Si ya hay 3 productos y estamos creando uno nuevo (no editando)
+            if (inventario.length >= 3 && document.getElementById('editIndex').value === "-1") {
+                alert("🛑 LÍMITE ALCANZADO\n\nEsta versión DEMO solo permite 3 productos.\n\nPara cargar todo tu inventario, adquiere la versión completa con HackTechnology al +584260869376.");
+                return;
+            }
+
+            let n = document.getElementById('invNombre').value;
+            let c = parseFloat(document.getElementById('invCosto').value);
+            let u = parseInt(document.getElementById('invUnd').value);
+            let m = (parseFloat(document.getElementById('invMargen').value)/100)+1;
+            let idx = parseInt(document.getElementById('editIndex').value);
+            if(!n || isNaN(c)) return;
+
+            let pData = { nombre: n, precioD: (c/u)*m, costo: c, und: u, margen: document.getElementById('invMargen').value };
+            if(idx === -1) inventario.push(pData); else inventario[idx] = pData;
+            
+            localStorage.setItem('ht_demo_inv', JSON.stringify(inventario));
+            actualizarInterfaz();
+            document.getElementById('invNombre').value = "";
+            document.getElementById('editIndex').value = "-1";
+        }
+
+        // --- RESTO DE FUNCIONES ---
+        function switchTab(e, id) {
+            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            e.currentTarget.classList.add('active');
+        }
+
+        function actualizarInterfaz() {
+            let h = ""; let o = "<option value=''>-- SELECCIONAR --</option>";
+            inventario.forEach((p, i) => {
+                h += `<div class='item-row'><span>${p.nombre}</span><span>${fm(p.precioD)}$</span></div>`;
+                o += `<option value='${i}'>${p.nombre}</option>`;
+            });
+            document.getElementById('lista-inventario').innerHTML = h;
+            document.getElementById('select-prod').innerHTML = o;
+        }
+
+        function preview() {
+            let idx = document.getElementById('select-prod').value;
+            if(idx!=="") {
+                let p = inventario[idx];
+                let box = document.getElementById('preview-box');
+                box.style.display = "block";
+                box.innerHTML = `PRECIO: ${fm(p.precioD)}$`;
+            }
+        }
+
+        function alCarrito() {
+            let idx = document.getElementById('select-prod').value;
+            let cant = parseFloat(document.getElementById('vtaCant').value);
+            if(idx==="") return;
+            let p = inventario[idx];
+            // Tasa fija de 40 para el demo si no hay internet
+            carrito.push({ nombre: p.nombre, cant, subtotal: p.precioD * cant * 40 });
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            let h = ""; let tot = 0;
+            carrito.forEach((item) => {
+                tot += item.subtotal;
+                h += `<div class='item-row'><span>${item.cant}x ${item.nombre}</span><span>${fm(item.subtotal)} Bs</span></div>`;
+            });
+            document.getElementById('carrito-lista').innerHTML = h;
+            document.getElementById('totalBs').innerText = fm(tot) + " Bs";
+        }
+
+        function vuelto() {
+            let t = parseFloat(document.getElementById('totalBs').innerText.replace(/\./g,'').replace(',','.'));
+            let p = parseFloat(document.getElementById('pagoBs').value) || 0;
+            document.getElementById('vBs').innerText = fm(p - t);
+        }
+    </script>
+</body>
+</html>
